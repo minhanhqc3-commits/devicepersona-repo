@@ -256,8 +256,7 @@ static int DPWriteSysctlString(NSString *value, void *oldValue, size_t *oldLengt
     return result;
 }
 
-%hookf(int, sysctlbyname, const char *name, void *oldValue, size_t *oldLength,
-       void *newValue, size_t newLength) {
+%hookf(int, sysctlbyname, const char *name, void *oldValue, size_t *oldLength, void *newValue, size_t newLength) {
     if (newValue == NULL && name != NULL) {
         if (strcmp(name, "hw.machine") == 0) {
             NSString *productType = DPString(@"productType");
@@ -296,4 +295,5 @@ static int DPWriteSysctlString(NSString *value, void *oldValue, size_t *oldLengt
         }
     }
 }
+
 
