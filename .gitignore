@@ -1,0 +1,16 @@
+.theos/
+obj/
+packages/
+
+site/pool/
+site/Packages
+site/Packages.gz
+site/Packages.bz2
+site/Packages.xz
+site/Packages.zst
+site/Release
+site/InRelease
+site/Release.gpg
+
+.DS_Store
+*.swp

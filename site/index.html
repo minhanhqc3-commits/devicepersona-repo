@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#111827">
+  <title>DevicePersona Repository</title>
+  <style>
+    :root { color-scheme: dark; font-family: system-ui, -apple-system, sans-serif; }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      color: #e5e7eb;
+      background: radial-gradient(circle at top, #27354d, #111827 60%);
+    }
+    main {
+      width: min(92vw, 42rem);
+      padding: 2rem;
+      border: 1px solid #374151;
+      border-radius: 1.25rem;
+      background: rgba(17, 24, 39, .88);
+      box-shadow: 0 1.5rem 4rem rgba(0, 0, 0, .35);
+    }
+    h1 { margin: 0 0 .5rem; font-size: clamp(2rem, 8vw, 3.4rem); }
+    p { color: #cbd5e1; line-height: 1.65; }
+    .button {
+      display: inline-block;
+      margin: 1rem 0;
+      padding: .85rem 1.15rem;
+      border-radius: .8rem;
+      color: #06111f;
+      background: #67e8f9;
+      font-weight: 750;
+      text-decoration: none;
+    }
+    code {
+      display: block;
+      overflow-wrap: anywhere;
+      padding: .9rem;
+      border-radius: .65rem;
+      color: #a5f3fc;
+      background: #0b1220;
+    }
+    small { color: #94a3b8; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>DevicePersona</h1>
+    <p>Nguồn package rootful dành cho iOS 15. Hãy mở trang này trên iPhone đã jailbreak và nhấn nút dưới đây.</p>
+    <a class="button" href="sileo://source/https://minhanhqc3-commits.github.io/devicepersona-repo/">Thêm vào Sileo</a>
+    <p>Nếu nút không mở, thêm thủ công URL sau trong Sileo → Sources:</p>
+    <code>https://minhanhqc3-commits.github.io/devicepersona-repo/</code>
+    <p>Yêu cầu Cephei Tweak Support 1.17.1 (rootful). Nếu Sileo báo thiếu <code>ws.hbang.common</code>, hãy thêm nguồn Chariz: <code>https://repo.chariz.com/</code></p>
+    <p><small>DevicePersona chỉ thay đổi giá trị mà các ứng dụng được chọn nhìn thấy; không sửa thông tin phần cứng thật.</small></p>
+  </main>
+</body>
+</html>

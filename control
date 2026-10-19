@@ -1,0 +1,11 @@
+Package: io.github.minhanhqc3-commits.devicepersona
+Name: DevicePersona
+Version: 0.1.0
+Architecture: iphoneos-arm
+Description: Per-app device persona overrides for privacy and compatibility testing.
+Maintainer: minhanhqc3-commits <minhanhqc3-commits@users.noreply.github.com>
+Author: minhanhqc3-commits <minhanhqc3-commits@users.noreply.github.com>
+Section: Tweaks
+Depends: firmware (>= 15.0), firmware (<< 16.0), mobilesubstrate, preferenceloader, ws.hbang.common (>= 1.17.1)
+Homepage: https://minhanhqc3-commits.github.io/devicepersona-repo/
+

@@ -1,0 +1,10 @@
+{
+    entry = {
+        bundle = DevicePersonaPrefs;
+        cell = PSLinkCell;
+        detail = DPPRootListController;
+        isController = 1;
+        label = DevicePersona;
+    };
+}
+
