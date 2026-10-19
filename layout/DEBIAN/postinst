@@ -1,0 +1,16 @@
+#!/bin/sh
+
+if [ "$1" = "configure" ]; then
+    uicache_path="$(command -v uicache 2>/dev/null || true)"
+    if [ -z "$uicache_path" ] && [ -x /usr/bin/uicache ]; then
+        uicache_path="/usr/bin/uicache"
+    fi
+
+    if [ -n "$uicache_path" ]; then
+        "$uicache_path" -p /Applications/DevicePersona.app >/dev/null 2>&1 \
+            || "$uicache_path" -a >/dev/null 2>&1 \
+            || true
+    fi
+fi
+
+exit 0

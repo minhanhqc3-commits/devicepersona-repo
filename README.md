@@ -16,7 +16,7 @@ Hoặc mở liên kết nhanh:
 sileo://source/https://minhanhqc3-commits.github.io/devicepersona-repo/
 ```
 
-Tìm **DevicePersona**, cài gói, respring nếu Sileo yêu cầu, rồi mở **Settings → DevicePersona** để cấu hình.
+Tìm **DevicePersona**, cài hoặc nâng cấp lên bản **0.2.0**, rồi mở ứng dụng **DevicePersona** ngay trên Màn hình chính để cấu hình. Gói vẫn giữ mục **Settings → DevicePersona** làm phương án dự phòng, nhưng ứng dụng ngoài Màn hình chính không phụ thuộc PreferenceLoader.
 
 Gói phụ thuộc **Cephei Tweak Support 1.17.1** dành cho rootful. Nếu Sileo chưa tìm thấy dependency `ws.hbang.common`, hãy thêm nguồn Chariz `https://repo.chariz.com/`, refresh Sources rồi cài lại.
 
@@ -52,11 +52,13 @@ Workflow `.github/workflows/build-and-deploy.yml` thực hiện toàn bộ quy t
 
 Trong **Settings → Pages → Build and deployment**, chọn **GitHub Actions** làm source. Có thể chạy lại workflow thủ công từ tab **Actions**.
 
-Khi phát hành bản mới, tăng `Version` trong `control` và tăng `CFBundleShortVersionString` / `CFBundleVersion` trong `prefs/Resources/Info.plist` trước khi push.
+Khi phát hành bản mới, tăng `Version` trong `control` và tăng `CFBundleShortVersionString` / `CFBundleVersion` trong cả `prefs/Resources/Info.plist` lẫn `app/Resources/Info.plist` trước khi push.
 
 ## Cấu hình và khôi phục
 
 Nhập bundle ID chính xác của app mục tiêu; nhiều ID cách nhau bằng dấu phẩy. Profile được nạp khi process khởi động, vì vậy cần đóng hẳn app khỏi App Switcher rồi mở lại.
+
+Ứng dụng cấu hình được cài tại `/Applications/DevicePersona.app`. Gói chạy `uicache` sau khi nâng cấp để biểu tượng xuất hiện. Nếu biểu tượng chưa hiện ngay, hãy respring một lần; không cần gỡ bản cũ trước khi nâng cấp.
 
 Nếu app crash, giữ Volume Up khi mở app nếu tweak loader hỗ trợ chế độ vô hiệu hóa, hoặc gỡ package trong Safe Mode. Nên thử từng nhóm trường; để trống trường nào sẽ giữ nguyên giá trị thật của trường đó.
 

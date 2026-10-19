@@ -9,3 +9,5 @@ control text eol=lf
 *.h text eol=lf
 *.plist text eol=lf
 *.html text eol=lf
+layout/DEBIAN/* text eol=lf
+*.png binary

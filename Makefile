@@ -1,7 +1,7 @@
 ARCHS = arm64
 TARGET = iphone:clang:latest:15.0
 
-INSTALL_TARGET_PROCESSES = SpringBoard Preferences
+INSTALL_TARGET_PROCESSES = SpringBoard Preferences DevicePersonaApp
 
 include $(THEOS)/makefiles/common.mk
 
@@ -14,6 +14,6 @@ DevicePersona_EXTRA_FRAMEWORKS = Cephei
 
 include $(THEOS_MAKE_PATH)/tweak.mk
 
-SUBPROJECTS += prefs
+SUBPROJECTS += prefs app
 include $(THEOS_MAKE_PATH)/aggregate.mk
 

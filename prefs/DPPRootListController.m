@@ -1,15 +1,27 @@
 #import "DPPRootListController.h"
 #import <Preferences/PSSpecifier.h>
 #import <UIKit/UIKit.h>
-#import <CoreFoundation/CFPreferences.h>
+#import <Cephei/HBPreferences.h>
+#import <dispatch/dispatch.h>
 
-static CFStringRef const DPPrefsDomain = CFSTR("io.github.minhanhqc3-commits.devicepersona");
+static NSString *const DPPrefsDomain = @"io.github.minhanhqc3-commits.devicepersona";
+
+static HBPreferences *DPPreferenceStore(void) {
+    static HBPreferences *preferences;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        preferences = [[HBPreferences alloc] initWithIdentifier:DPPrefsDomain];
+    });
+    return preferences;
+}
 
 @implementation DPPRootListController
 
 - (NSArray *)specifiers {
     if (!_specifiers) {
-        _specifiers = [self loadSpecifiersFromPlistName:@"Root" target:self];
+        _specifiers = [self loadSpecifiersFromPlistName:@"Root"
+                                                 target:self
+                                                 bundle:[NSBundle bundleForClass:self.class]];
     }
     return _specifiers;
 }
@@ -20,13 +32,7 @@ static CFStringRef const DPPrefsDomain = CFSTR("io.github.minhanhqc3-commits.dev
         return specifier.properties[@"default"];
     }
 
-    CFPreferencesSynchronize(DPPrefsDomain, kCFPreferencesCurrentUser, kCFPreferencesAnyHost);
-    id value = CFBridgingRelease(CFPreferencesCopyValue(
-        (__bridge CFStringRef)key,
-        DPPrefsDomain,
-        kCFPreferencesCurrentUser,
-        kCFPreferencesAnyHost
-    ));
+    id value = [DPPreferenceStore() objectForKey:key];
     return value ?: specifier.properties[@"default"];
 }
 
@@ -36,26 +42,12 @@ static CFStringRef const DPPrefsDomain = CFSTR("io.github.minhanhqc3-commits.dev
         return;
     }
 
-    CFPreferencesSetValue(
-        (__bridge CFStringRef)key,
-        (__bridge CFPropertyListRef)value,
-        DPPrefsDomain,
-        kCFPreferencesCurrentUser,
-        kCFPreferencesAnyHost
-    );
-    CFPreferencesSynchronize(DPPrefsDomain, kCFPreferencesCurrentUser, kCFPreferencesAnyHost);
+    [DPPreferenceStore() setObject:value forKey:key];
 }
 
 - (void)generateVendorIdentifier {
     NSString *identifier = NSUUID.UUID.UUIDString;
-    CFPreferencesSetValue(
-        CFSTR("vendorIdentifier"),
-        (__bridge CFStringRef)identifier,
-        DPPrefsDomain,
-        kCFPreferencesCurrentUser,
-        kCFPreferencesAnyHost
-    );
-    CFPreferencesSynchronize(DPPrefsDomain, kCFPreferencesCurrentUser, kCFPreferencesAnyHost);
+    [DPPreferenceStore() setObject:identifier forKey:@"vendorIdentifier"];
     [self reloadSpecifiers];
 
     UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"DevicePersona"
