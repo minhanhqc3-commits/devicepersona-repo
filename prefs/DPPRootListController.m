@@ -1,5 +1,6 @@
 #import "DPPRootListController.h"
 #import "DPPApplicationPickerController.h"
+#import "DPPDiagnosticsController.h"
 #import <Preferences/PSSpecifier.h>
 #import <UIKit/UIKit.h>
 #import <Cephei/HBPreferences.h>
@@ -38,6 +39,21 @@ static NSDictionary *DPPStoredActiveProfile(void) {
     return [value isKindOfClass:NSDictionary.class] ? value : @{};
 }
 
+static NSDictionary *DPPSanitizedProfile(NSDictionary *profile) {
+    if (![profile isKindOfClass:NSDictionary.class]) {
+        return @{};
+    }
+
+    NSMutableDictionary *sanitized = [NSMutableDictionary dictionary];
+    for (NSString *key in DPPProfilePreferenceKeys()) {
+        id value = profile[key];
+        if (value != nil) {
+            sanitized[key] = value;
+        }
+    }
+    return sanitized.copy;
+}
+
 static id DPPReadProfileValue(NSString *key) {
     id value = DPPStoredActiveProfile()[key];
     return value != nil ? value : [DPPreferenceStore() objectForKey:key];
@@ -45,21 +61,36 @@ static id DPPReadProfileValue(NSString *key) {
 
 static void DPPWriteProfileValue(NSString *key, id value) {
     id storedValue = value ?: @"";
-    NSMutableDictionary *profile = [DPPStoredActiveProfile() mutableCopy];
+    NSMutableDictionary *profile = [DPPSanitizedProfile(DPPStoredActiveProfile()) mutableCopy];
     profile[key] = storedValue;
 
-    // The dictionary is the atomic snapshot used by 0.4.0+. The legacy key is
-    // also kept in sync so a downgrade can still read the latest value.
+    // The dictionary is the atomic snapshot used by 0.4.0 and later. The
+    // legacy key is also kept in sync so a downgrade can read the latest value.
     [DPPreferenceStore() setObject:profile.copy forKey:@"activeProfile"];
     [DPPreferenceStore() setObject:storedValue forKey:key];
 }
 
 static void DPPWriteProfile(NSDictionary *profile) {
-    [DPPreferenceStore() setObject:profile.copy forKey:@"activeProfile"];
-    [profile enumerateKeysAndObjectsUsingBlock:^(id key, id value, BOOL *stop) {
+    NSDictionary *sanitized = DPPSanitizedProfile(profile);
+    for (NSString *key in DPPProfilePreferenceKeys()) {
+        [DPPreferenceStore() removeObjectForKey:key];
+    }
+    [DPPreferenceStore() setObject:sanitized forKey:@"activeProfile"];
+    [sanitized enumerateKeysAndObjectsUsingBlock:^(id key, id value, BOOL *stop) {
         (void)stop;
         [DPPreferenceStore() setObject:value forKey:key];
     }];
+}
+
+static NSDictionary *DPPCurrentProfile(void) {
+    NSMutableDictionary *profile = [NSMutableDictionary dictionary];
+    for (NSString *key in DPPProfilePreferenceKeys()) {
+        id value = DPPReadProfileValue(key);
+        if (value != nil) {
+            profile[key] = value;
+        }
+    }
+    return profile.copy;
 }
 
 static id DPPRandomObject(NSArray *values) {
@@ -70,6 +101,25 @@ static id DPPRandomObject(NSArray *values) {
 }
 
 @implementation DPPRootListController
+
+- (void)presentDelayedStatusWithTitle:(NSString *)title message:(NSString *)message {
+    __weak typeof(self) weakSelf = self;
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.4 * NSEC_PER_SEC)),
+                   dispatch_get_main_queue(), ^{
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        if (strongSelf == nil || strongSelf.view.window == nil) {
+            return;
+        }
+
+        UIAlertController *alert = [UIAlertController alertControllerWithTitle:title
+                                                                       message:message
+                                                                preferredStyle:UIAlertControllerStyleAlert];
+        [alert addAction:[UIAlertAction actionWithTitle:@"OK"
+                                                  style:UIAlertActionStyleDefault
+                                                handler:nil]];
+        [strongSelf presentViewController:alert animated:YES completion:nil];
+    });
+}
 
 - (NSArray<NSString *> *)selectedBundleIdentifiers {
     id configuredTargets = [DPPreferenceStore() objectForKey:@"targetBundleIDs"];
@@ -208,13 +258,139 @@ static id DPPRandomObject(NSArray *values) {
         @"%@\n%@ / %@\niOS %@ · %@\n%@ · %@-%@\n\nĐã tạo tên máy và IDFV mới. Hãy đóng hẳn rồi mở lại ứng dụng mục tiêu.",
         device[@"name"], device[@"productType"], device[@"hardwareModel"],
         systemVersion, region[@"locale"], region[@"carrier"], region[@"mcc"], region[@"mnc"]];
-    UIAlertController *result = [UIAlertController alertControllerWithTitle:@"Đã tạo profile"
-                                                                    message:summary
-                                                             preferredStyle:UIAlertControllerStyleAlert];
-    [result addAction:[UIAlertAction actionWithTitle:@"OK"
-                                              style:UIAlertActionStyleDefault
-                                            handler:nil]];
-    [self presentViewController:result animated:YES completion:nil];
+    [self presentDelayedStatusWithTitle:@"Đã tạo profile" message:summary];
+}
+
+- (void)showDiagnostics {
+    BOOL enabled = [[DPPreferenceStore() objectForKey:@"enabled"] boolValue];
+    BOOL advanced = [[DPPreferenceStore() objectForKey:@"advancedHardwareEnabled"] boolValue];
+    DPPDiagnosticsController *controller = [[DPPDiagnosticsController alloc]
+        initWithProfile:DPPCurrentProfile()
+        enabled:enabled
+        targetBundleIdentifiers:[self selectedBundleIdentifiers]
+        advancedHardwareEnabled:advanced];
+    [self.navigationController pushViewController:controller animated:YES];
+}
+
+- (void)backupProfile {
+    [self.view endEditing:YES];
+    NSDictionary *profile = DPPCurrentProfile();
+    if (profile.count == 0) {
+        UIAlertController *emptyAlert = [UIAlertController
+            alertControllerWithTitle:@"Chưa có profile"
+                             message:@"Hãy nhập hoặc tạo profile trước khi sao lưu."
+                      preferredStyle:UIAlertControllerStyleAlert];
+        [emptyAlert addAction:[UIAlertAction actionWithTitle:@"OK"
+                                                       style:UIAlertActionStyleDefault
+                                                     handler:nil]];
+        [self presentViewController:emptyAlert animated:YES completion:nil];
+        return;
+    }
+
+    id existingBackup = [DPPreferenceStore() objectForKey:@"profileBackup"];
+    if ([existingBackup isKindOfClass:NSDictionary.class]) {
+        UIAlertController *confirm = [UIAlertController
+            alertControllerWithTitle:@"Ghi đè bản sao lưu?"
+                             message:@"DevicePersona chỉ giữ một bản sao profile cục bộ."
+                      preferredStyle:UIAlertControllerStyleAlert];
+        [confirm addAction:[UIAlertAction actionWithTitle:@"Hủy"
+                                                    style:UIAlertActionStyleCancel
+                                                  handler:nil]];
+        __weak typeof(self) weakSelf = self;
+        [confirm addAction:[UIAlertAction actionWithTitle:@"Ghi đè"
+                                                    style:UIAlertActionStyleDestructive
+                                                  handler:^(__unused UIAlertAction *action) {
+            [weakSelf storeProfileBackup:profile];
+        }]];
+        [self presentViewController:confirm animated:YES completion:nil];
+        return;
+    }
+
+    [self storeProfileBackup:profile];
+}
+
+- (void)storeProfileBackup:(NSDictionary *)profile {
+    NSDictionary *backup = @{
+        @"profile": profile.copy,
+        @"createdAt": @([NSDate.date timeIntervalSince1970])
+    };
+    [DPPreferenceStore() setObject:backup forKey:@"profileBackup"];
+
+    [self presentDelayedStatusWithTitle:@"Đã sao lưu profile"
+                                message:@"Bản sao được lưu cục bộ trên iPhone và không gồm danh sách ứng dụng hay trạng thái bật tweak."];
+}
+
+- (void)restoreProfile {
+    [self.view endEditing:YES];
+    id storedBackup = [DPPreferenceStore() objectForKey:@"profileBackup"];
+    NSDictionary *backup = [storedBackup isKindOfClass:NSDictionary.class] ? storedBackup : nil;
+    id storedProfile = backup[@"profile"];
+    NSDictionary *profile = [storedProfile isKindOfClass:NSDictionary.class] ? storedProfile : nil;
+    if (profile.count == 0) {
+        UIAlertController *missingAlert = [UIAlertController
+            alertControllerWithTitle:@"Không có bản sao lưu"
+                             message:@"Hãy dùng “Sao lưu profile” trước."
+                      preferredStyle:UIAlertControllerStyleAlert];
+        [missingAlert addAction:[UIAlertAction actionWithTitle:@"OK"
+                                                         style:UIAlertActionStyleDefault
+                                                       handler:nil]];
+        [self presentViewController:missingAlert animated:YES completion:nil];
+        return;
+    }
+
+    NSString *dateText = @"không rõ thời gian";
+    id timestamp = backup[@"createdAt"];
+    if ([timestamp respondsToSelector:@selector(doubleValue)]) {
+        NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
+        formatter.dateStyle = NSDateFormatterMediumStyle;
+        formatter.timeStyle = NSDateFormatterShortStyle;
+        NSDate *date = [NSDate dateWithTimeIntervalSince1970:[timestamp doubleValue]];
+        dateText = [formatter stringFromDate:date] ?: dateText;
+    }
+
+    UIAlertController *confirm = [UIAlertController
+        alertControllerWithTitle:@"Khôi phục profile?"
+                         message:[NSString stringWithFormat:@"Bản sao lưu: %@. Profile hiện tại sẽ được thay thế; phạm vi ứng dụng và các công tắc được giữ nguyên.", dateText]
+                  preferredStyle:UIAlertControllerStyleAlert];
+    [confirm addAction:[UIAlertAction actionWithTitle:@"Hủy"
+                                                style:UIAlertActionStyleCancel
+                                              handler:nil]];
+    __weak typeof(self) weakSelf = self;
+    [confirm addAction:[UIAlertAction actionWithTitle:@"Khôi phục"
+                                                style:UIAlertActionStyleDefault
+                                              handler:^(__unused UIAlertAction *action) {
+        DPPWriteProfile(profile);
+        [weakSelf reloadSpecifiers];
+        [weakSelf presentDelayedStatusWithTitle:@"Đã khôi phục profile"
+                                        message:@"Hãy đóng hẳn rồi mở lại ứng dụng mục tiêu để nạp cấu hình đã khôi phục."];
+    }]];
+    [self presentViewController:confirm animated:YES completion:nil];
+}
+
+- (void)resetProfile {
+    [self.view endEditing:YES];
+    UIAlertController *confirm = [UIAlertController
+        alertControllerWithTitle:@"Xóa profile DevicePersona?"
+                         message:@"Chỉ các giá trị thay thế của DevicePersona bị xóa. Dữ liệu và keychain của ứng dụng mục tiêu không bị đụng tới. Bản sao lưu cục bộ vẫn được giữ."
+                  preferredStyle:UIAlertControllerStyleAlert];
+    [confirm addAction:[UIAlertAction actionWithTitle:@"Hủy"
+                                                style:UIAlertActionStyleCancel
+                                              handler:nil]];
+    __weak typeof(self) weakSelf = self;
+    [confirm addAction:[UIAlertAction actionWithTitle:@"Xóa profile"
+                                                style:UIAlertActionStyleDestructive
+                                              handler:^(__unused UIAlertAction *action) {
+        for (NSString *key in DPPProfilePreferenceKeys()) {
+            [DPPreferenceStore() removeObjectForKey:key];
+        }
+        // Keep the complete active snapshot readable until all fallback keys
+        // are gone, then remove it as the final reset operation.
+        [DPPreferenceStore() removeObjectForKey:@"activeProfile"];
+        [weakSelf reloadSpecifiers];
+        [weakSelf presentDelayedStatusWithTitle:@"Đã xóa profile"
+                                        message:@"Danh sách ứng dụng, các công tắc và bản sao lưu vẫn được giữ. Hãy đóng hẳn rồi mở lại ứng dụng mục tiêu."];
+    }]];
+    [self presentViewController:confirm animated:YES completion:nil];
 }
 
 - (void)openApplicationPicker {

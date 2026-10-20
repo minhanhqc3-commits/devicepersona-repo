@@ -13,6 +13,10 @@ static HBPreferences *DPPreferencesStore;
 static NSDictionary *DPPreferences;
 static NSDictionary *DPActiveProfile;
 static BOOL DPProcessEnabled;
+static BOOL DPHasOperatingSystemVersionOverride;
+static NSOperatingSystemVersion DPOperatingSystemVersionOverride;
+static NSString *DPOperatingSystemVersionText;
+static NSString *DPOperatingSystemVersionDescription;
 
 static id DPProfileValue(NSString *key) {
     id value = DPActiveProfile[key];
@@ -25,6 +29,63 @@ static NSString *DPString(NSString *key) {
         return value;
     }
     return nil;
+}
+
+static BOOL DPParseOperatingSystemVersion(NSString *value,
+                                          NSOperatingSystemVersion *output) {
+    if (![value isKindOfClass:NSString.class] || value.length == 0) {
+        return NO;
+    }
+
+    NSArray<NSString *> *components = [value componentsSeparatedByString:@"."];
+    if (components.count < 1 || components.count > 3) {
+        return NO;
+    }
+
+    NSInteger numbers[3] = {0, 0, 0};
+    const NSUInteger maximum = (NSUInteger)NSIntegerMax;
+    for (NSUInteger index = 0; index < components.count; index++) {
+        NSString *component = components[index];
+        if (component.length == 0) {
+            return NO;
+        }
+
+        NSUInteger number = 0;
+        for (NSUInteger characterIndex = 0;
+             characterIndex < component.length;
+             characterIndex++) {
+            unichar character = [component characterAtIndex:characterIndex];
+            if (character < '0' || character > '9') {
+                return NO;
+            }
+            NSUInteger digit = character - '0';
+            if (number > (maximum - digit) / 10) {
+                return NO;
+            }
+            number = number * 10 + digit;
+        }
+        numbers[index] = (NSInteger)number;
+    }
+
+    if (output != NULL) {
+        NSOperatingSystemVersion version;
+        version.majorVersion = numbers[0];
+        version.minorVersion = numbers[1];
+        version.patchVersion = numbers[2];
+        *output = version;
+    }
+    return YES;
+}
+
+static BOOL DPOperatingSystemVersionIsAtLeast(NSOperatingSystemVersion current,
+                                               NSOperatingSystemVersion minimum) {
+    if (current.majorVersion != minimum.majorVersion) {
+        return current.majorVersion > minimum.majorVersion;
+    }
+    if (current.minorVersion != minimum.minorVersion) {
+        return current.minorVersion > minimum.minorVersion;
+    }
+    return current.patchVersion >= minimum.patchVersion;
 }
 
 static BOOL DPBool(NSString *key, BOOL fallback) {
@@ -94,6 +155,30 @@ static void DPLoadConfiguration(void) {
     DPActiveProfile = [activeProfile isKindOfClass:NSDictionary.class]
         ? [activeProfile copy]
         : @{};
+
+    NSString *rawSystemVersion = DPString(@"systemVersion");
+    NSString *trimmedSystemVersion = [rawSystemVersion
+        stringByTrimmingCharactersInSet:NSCharacterSet.whitespaceAndNewlineCharacterSet];
+    NSString *hostSystemVersion = UIDevice.currentDevice.systemVersion;
+    NSOperatingSystemVersion parsedVersion = {0, 0, 0};
+    NSOperatingSystemVersion hostVersion = {0, 0, 0};
+    BOOL hasParsedVersion = DPParseOperatingSystemVersion(trimmedSystemVersion,
+                                                          &parsedVersion);
+    BOOL hasHostVersion = DPParseOperatingSystemVersion(hostSystemVersion,
+                                                        &hostVersion);
+    DPHasOperatingSystemVersionOverride =
+        hasParsedVersion && hasHostVersion &&
+        parsedVersion.majorVersion == hostVersion.majorVersion &&
+        DPOperatingSystemVersionIsAtLeast(hostVersion, parsedVersion);
+    if (DPHasOperatingSystemVersionOverride) {
+        DPOperatingSystemVersionOverride = parsedVersion;
+        DPOperatingSystemVersionText = [trimmedSystemVersion copy];
+        DPOperatingSystemVersionDescription =
+            [NSString stringWithFormat:@"Version %@", trimmedSystemVersion];
+    } else {
+        DPOperatingSystemVersionText = nil;
+        DPOperatingSystemVersionDescription = nil;
+    }
     DPProcessEnabled = DPShouldEnableForCurrentProcess();
 }
 
@@ -157,11 +242,33 @@ static int DPWriteSysctlString(NSString *value, void *oldValue, size_t *oldLengt
 }
 
 - (NSString *)systemVersion {
-    return DPString(@"systemVersion") ?: %orig;
+    return DPHasOperatingSystemVersionOverride ? DPOperatingSystemVersionText : %orig;
 }
 
 - (NSUUID *)identifierForVendor {
     return DPUUID(@"vendorIdentifier") ?: %orig;
+}
+
+%end
+
+%hook NSProcessInfo
+
+- (NSOperatingSystemVersion)operatingSystemVersion {
+    return DPHasOperatingSystemVersionOverride
+        ? DPOperatingSystemVersionOverride
+        : %orig;
+}
+
+- (NSString *)operatingSystemVersionString {
+    return DPHasOperatingSystemVersionOverride
+        ? DPOperatingSystemVersionDescription
+        : %orig;
+}
+
+- (BOOL)isOperatingSystemAtLeastVersion:(NSOperatingSystemVersion)minimumVersion {
+    return DPHasOperatingSystemVersionOverride
+        ? DPOperatingSystemVersionIsAtLeast(DPOperatingSystemVersionOverride, minimumVersion)
+        : %orig(minimumVersion);
 }
 
 %end

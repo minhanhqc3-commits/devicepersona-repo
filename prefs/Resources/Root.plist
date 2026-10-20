@@ -43,7 +43,33 @@
         </dict>
         <dict>
             <key>cell</key><string>PSGroupCell</string>
+            <key>label</key><string>CÔNG CỤ PROFILE</string>
+            <key>footerText</key><string>Chẩn đoán, sao lưu, khôi phục và xóa chỉ tác động tới cấu hình DevicePersona. Không xóa dữ liệu hoặc keychain của ứng dụng mục tiêu.</string>
+        </dict>
+        <dict>
+            <key>cell</key><string>PSButtonCell</string>
+            <key>label</key><string>Kiểm tra cấu hình</string>
+            <key>action</key><string>showDiagnostics</string>
+        </dict>
+        <dict>
+            <key>cell</key><string>PSButtonCell</string>
+            <key>label</key><string>Sao lưu profile</string>
+            <key>action</key><string>backupProfile</string>
+        </dict>
+        <dict>
+            <key>cell</key><string>PSButtonCell</string>
+            <key>label</key><string>Khôi phục profile</string>
+            <key>action</key><string>restoreProfile</string>
+        </dict>
+        <dict>
+            <key>cell</key><string>PSButtonCell</string>
+            <key>label</key><string>Xóa profile DevicePersona</string>
+            <key>action</key><string>resetProfile</string>
+        </dict>
+        <dict>
+            <key>cell</key><string>PSGroupCell</string>
             <key>label</key><string>THÔNG TIN THIẾT BỊ</string>
+            <key>footerText</key><string>Phiên bản iOS thay thế chỉ có hiệu lực khi thuộc nhánh iOS 15 và không cao hơn phiên bản thật của máy.</string>
         </dict>
         <dict>
             <key>cell</key><string>PSEditTextCell</string>
