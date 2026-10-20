@@ -2,7 +2,7 @@ include $(THEOS)/makefiles/common.mk
 
 BUNDLE_NAME = DevicePersonaPrefs
 
-DevicePersonaPrefs_FILES = DPPRootListController.m
+DevicePersonaPrefs_FILES = DPPRootListController.m DPPApplicationPickerController.m
 DevicePersonaPrefs_FRAMEWORKS = Foundation UIKit
 DevicePersonaPrefs_PRIVATE_FRAMEWORKS = Preferences
 DevicePersonaPrefs_EXTRA_FRAMEWORKS = Cephei

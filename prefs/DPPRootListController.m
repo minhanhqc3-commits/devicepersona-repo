@@ -1,4 +1,5 @@
 #import "DPPRootListController.h"
+#import "DPPApplicationPickerController.h"
 #import <Preferences/PSSpecifier.h>
 #import <UIKit/UIKit.h>
 #import <Cephei/HBPreferences.h>
@@ -16,6 +17,27 @@ static HBPreferences *DPPreferenceStore(void) {
 }
 
 @implementation DPPRootListController
+
+- (NSArray<NSString *> *)selectedBundleIdentifiers {
+    id configuredTargets = [DPPreferenceStore() objectForKey:@"targetBundleIDs"];
+    if ([configuredTargets isKindOfClass:NSArray.class]) {
+        return configuredTargets;
+    }
+
+    if (![configuredTargets isKindOfClass:NSString.class]) {
+        return @[];
+    }
+
+    NSMutableOrderedSet<NSString *> *identifiers = [NSMutableOrderedSet orderedSet];
+    NSCharacterSet *whitespace = NSCharacterSet.whitespaceAndNewlineCharacterSet;
+    for (NSString *candidate in [(NSString *)configuredTargets componentsSeparatedByString:@","]) {
+        NSString *trimmed = [candidate stringByTrimmingCharactersInSet:whitespace];
+        if (trimmed.length > 0) {
+            [identifiers addObject:trimmed];
+        }
+    }
+    return identifiers.array;
+}
 
 - (NSArray *)specifiers {
     if (!_specifiers) {
@@ -55,6 +77,19 @@ static HBPreferences *DPPreferenceStore(void) {
                                                             preferredStyle:UIAlertControllerStyleAlert];
     [alert addAction:[UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:nil]];
     [self presentViewController:alert animated:YES completion:nil];
+}
+
+- (void)openApplicationPicker {
+    __weak typeof(self) weakSelf = self;
+    DPPApplicationPickerController *picker =
+        [[DPPApplicationPickerController alloc]
+            initWithSelectedBundleIdentifiers:[self selectedBundleIdentifiers]
+            selectionHandler:^(NSArray<NSString *> *bundleIdentifiers) {
+                NSString *value = [bundleIdentifiers componentsJoinedByString:@", "];
+                [DPPreferenceStore() setObject:value forKey:@"targetBundleIDs"];
+                [weakSelf reloadSpecifiers];
+            }];
+    [self.navigationController pushViewController:picker animated:YES];
 }
 
 @end

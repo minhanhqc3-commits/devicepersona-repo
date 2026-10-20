@@ -16,7 +16,7 @@ Hoặc mở liên kết nhanh:
 sileo://source/https://minhanhqc3-commits.github.io/devicepersona-repo/
 ```
 
-Tìm **DevicePersona**, cài hoặc nâng cấp lên bản **0.2.0**, rồi mở ứng dụng **DevicePersona** ngay trên Màn hình chính để cấu hình. Gói vẫn giữ mục **Settings → DevicePersona** làm phương án dự phòng, nhưng ứng dụng ngoài Màn hình chính không phụ thuộc PreferenceLoader.
+Tìm **DevicePersona**, cài hoặc nâng cấp lên bản **0.3.0**, rồi mở ứng dụng **DevicePersona** ngay trên Màn hình chính để cấu hình. Gói vẫn giữ mục **Settings → DevicePersona** làm phương án dự phòng, nhưng ứng dụng ngoài Màn hình chính không phụ thuộc PreferenceLoader.
 
 Gói phụ thuộc **Cephei Tweak Support 1.17.1** dành cho rootful. Nếu Sileo chưa tìm thấy dependency `ws.hbang.common`, hãy thêm nguồn Chariz `https://repo.chariz.com/`, refresh Sources rồi cài lại.
 
@@ -26,7 +26,7 @@ Gói phụ thuộc **Cephei Tweak Support 1.17.1** dành cho rootful. Nếu Sile
 - `NSLocale` / `NSTimeZone`: locale, danh sách ngôn ngữ và múi giờ.
 - `CTCarrier`: tên nhà mạng, MCC, MNC và mã quốc gia.
 - Tùy chọn nâng cao: `uname.machine`, `sysctlbyname("hw.machine")` và `hw.model`.
-- Chỉ kích hoạt với bundle ID được nhập trong Settings; mặc định tắt và chỉ chấp nhận app bên thứ ba nằm trong app container.
+- Tự đọc danh sách ứng dụng người dùng đã cài, hỗ trợ tìm kiếm và chọn nhiều ứng dụng; mặc định tắt và chỉ chấp nhận app bên thứ ba nằm trong app container.
 
 Không hỗ trợ giả Serial, IMEI/MEID, UDID, ECID, IMSI/ICCID, địa chỉ MAC, APNs token, DeviceCheck/App Attest hoặc định danh do máy chủ tạo. Tweak không xóa app container, keychain hay dữ liệu người dùng.
 
@@ -56,7 +56,9 @@ Khi phát hành bản mới, tăng `Version` trong `control` và tăng `CFBundle
 
 ## Cấu hình và khôi phục
 
-Nhập bundle ID chính xác của app mục tiêu; nhiều ID cách nhau bằng dấu phẩy. Profile được nạp khi process khởi động, vì vậy cần đóng hẳn app khỏi App Switcher rồi mở lại.
+Mở **Chọn ứng dụng đã cài**, tìm theo tên hoặc bundle ID rồi đánh dấu một hay nhiều app mục tiêu. Ô bundle ID thủ công vẫn có thể dùng làm phương án dự phòng; nhiều ID cách nhau bằng dấu phẩy. Profile được nạp khi process khởi động, vì vậy cần đóng hẳn app khỏi App Switcher rồi mở lại.
+
+Danh sách ứng dụng và lựa chọn chỉ được xử lý cục bộ trên iPhone, không được gửi ra ngoài. Mỗi lần mở màn hình chọn, DevicePersona đọc lại danh sách hiện có trên máy.
 
 Ứng dụng cấu hình được cài tại `/Applications/DevicePersona.app`. Gói chạy `uicache` sau khi nâng cấp để biểu tượng xuất hiện. Nếu biểu tượng chưa hiện ngay, hãy respring một lần; không cần gỡ bản cũ trước khi nâng cấp.
 

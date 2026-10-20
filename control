@@ -1,8 +1,8 @@
 Package: io.github.minhanhqc3-commits.devicepersona
 Name: DevicePersona
-Version: 0.2.0
+Version: 0.3.0
 Architecture: iphoneos-arm
-Description: Per-app device persona overrides with a Home Screen configuration app for privacy and compatibility testing.
+Description: Per-app device persona overrides with an installed-app picker and Home Screen configuration app for privacy and compatibility testing.
 Maintainer: minhanhqc3-commits <minhanhqc3-commits@users.noreply.github.com>
 Author: minhanhqc3-commits <minhanhqc3-commits@users.noreply.github.com>
 Section: Tweaks

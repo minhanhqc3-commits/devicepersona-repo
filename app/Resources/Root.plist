@@ -7,7 +7,7 @@
         <dict>
             <key>cell</key><string>PSGroupCell</string>
             <key>label</key><string>PHẠM VI ÁP DỤNG</string>
-            <key>footerText</key><string>Mỗi bundle ID cách nhau bằng dấu phẩy. Cấu hình chỉ được nạp khi app khởi động.</string>
+            <key>footerText</key><string>Chọn một hoặc nhiều ứng dụng đã cài. Danh sách chỉ được đọc và lưu trên máy. Cấu hình được nạp khi ứng dụng mục tiêu khởi động lại.</string>
         </dict>
         <dict>
             <key>cell</key><string>PSSwitchCell</string>
@@ -18,8 +18,13 @@
             <key>set</key><string>setPreferenceValue:specifier:</string>
         </dict>
         <dict>
+            <key>cell</key><string>PSButtonCell</string>
+            <key>label</key><string>Chọn ứng dụng đã cài</string>
+            <key>action</key><string>openApplicationPicker</string>
+        </dict>
+        <dict>
             <key>cell</key><string>PSEditTextCell</string>
-            <key>label</key><string>Bundle ID mục tiêu</string>
+            <key>label</key><string>Bundle ID (thủ công)</string>
             <key>placeholder</key><string>com.example.app</string>
             <key>key</key><string>targetBundleIDs</string>
             <key>default</key><string></string>
