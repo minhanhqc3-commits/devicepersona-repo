@@ -11,10 +11,16 @@
 static NSString *const DPPrefsDomain = @"io.github.minhanhqc3-commits.devicepersona";
 static HBPreferences *DPPreferencesStore;
 static NSDictionary *DPPreferences;
+static NSDictionary *DPActiveProfile;
 static BOOL DPProcessEnabled;
 
+static id DPProfileValue(NSString *key) {
+    id value = DPActiveProfile[key];
+    return value != nil ? value : DPPreferences[key];
+}
+
 static NSString *DPString(NSString *key) {
-    id value = DPPreferences[key];
+    id value = DPProfileValue(key);
     if ([value isKindOfClass:NSString.class] && [(NSString *)value length] > 0) {
         return value;
     }
@@ -84,6 +90,10 @@ static void DPLoadConfiguration(void) {
     DPPreferencesStore = [[HBPreferences alloc] initWithIdentifier:DPPrefsDomain];
     NSDictionary *loaded = DPPreferencesStore.dictionaryRepresentation;
     DPPreferences = [loaded isKindOfClass:NSDictionary.class] ? loaded.copy : @{};
+    id activeProfile = DPPreferences[@"activeProfile"];
+    DPActiveProfile = [activeProfile isKindOfClass:NSDictionary.class]
+        ? [activeProfile copy]
+        : @{};
     DPProcessEnabled = DPShouldEnableForCurrentProcess();
 }
 
@@ -233,7 +243,10 @@ static int DPWriteSysctlString(NSString *value, void *oldValue, size_t *oldLengt
 }
 
 - (BOOL)allowsVOIP {
-    return DPPreferences[@"carrierAllowsVOIP"] ? DPBool(@"carrierAllowsVOIP", YES) : %orig;
+    id configuredValue = DPProfileValue(@"carrierAllowsVOIP");
+    return [configuredValue respondsToSelector:@selector(boolValue)]
+        ? [configuredValue boolValue]
+        : %orig;
 }
 
 %end

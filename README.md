@@ -16,7 +16,7 @@ Hoặc mở liên kết nhanh:
 sileo://source/https://minhanhqc3-commits.github.io/devicepersona-repo/
 ```
 
-Tìm **DevicePersona**, cài hoặc nâng cấp lên bản **0.3.0**, rồi mở ứng dụng **DevicePersona** ngay trên Màn hình chính để cấu hình. Gói vẫn giữ mục **Settings → DevicePersona** làm phương án dự phòng, nhưng ứng dụng ngoài Màn hình chính không phụ thuộc PreferenceLoader.
+Tìm **DevicePersona**, cài hoặc nâng cấp lên bản **0.4.0**, rồi mở ứng dụng **DevicePersona** ngay trên Màn hình chính để cấu hình. Gói vẫn giữ mục **Settings → DevicePersona** làm phương án dự phòng, nhưng ứng dụng ngoài Màn hình chính không phụ thuộc PreferenceLoader.
 
 Gói phụ thuộc **Cephei Tweak Support 1.17.1** dành cho rootful. Nếu Sileo chưa tìm thấy dependency `ws.hbang.common`, hãy thêm nguồn Chariz `https://repo.chariz.com/`, refresh Sources rồi cài lại.
 
@@ -27,6 +27,7 @@ Gói phụ thuộc **Cephei Tweak Support 1.17.1** dành cho rootful. Nếu Sile
 - `CTCarrier`: tên nhà mạng, MCC, MNC và mã quốc gia.
 - Tùy chọn nâng cao: `uname.machine`, `sysctlbyname("hw.machine")` và `hw.model`.
 - Tự đọc danh sách ứng dụng người dùng đã cài, hỗ trợ tìm kiếm và chọn nhiều ứng dụng; mặc định tắt và chỉ chấp nhận app bên thứ ba nằm trong app container.
+- Nút **Tạo profile ngẫu nhiên** tạo một bộ giá trị cố định gồm model/phần cứng, tên máy, IDFV, vùng, múi giờ và nhà mạng. Các cặp thông tin được chọn theo preset nhất quán với nhánh iOS 15.8.x.
 
 Không hỗ trợ giả Serial, IMEI/MEID, UDID, ECID, IMSI/ICCID, địa chỉ MAC, APNs token, DeviceCheck/App Attest hoặc định danh do máy chủ tạo. Tweak không xóa app container, keychain hay dữ liệu người dùng.
 
@@ -59,6 +60,8 @@ Khi phát hành bản mới, tăng `Version` trong `control` và tăng `CFBundle
 Mở **Chọn ứng dụng đã cài**, tìm theo tên hoặc bundle ID rồi đánh dấu một hay nhiều app mục tiêu. Ô bundle ID thủ công vẫn có thể dùng làm phương án dự phòng; nhiều ID cách nhau bằng dấu phẩy. Profile được nạp khi process khởi động, vì vậy cần đóng hẳn app khỏi App Switcher rồi mở lại.
 
 Danh sách ứng dụng và lựa chọn chỉ được xử lý cục bộ trên iPhone, không được gửi ra ngoài. Mỗi lần mở màn hình chọn, DevicePersona đọc lại danh sách hiện có trên máy.
+
+Để tạo nhanh, nhấn **Tạo profile ngẫu nhiên** rồi xác nhận. Profile chỉ đổi khi bạn chủ động bấm nút và sẽ được giữ nguyên giữa các lần mở app; tính năng không tự bật tweak, không thay đổi danh sách ứng dụng và không tự bật mô phỏng phần cứng nâng cao.
 
 Ứng dụng cấu hình được cài tại `/Applications/DevicePersona.app`. Gói chạy `uicache` sau khi nâng cấp để biểu tượng xuất hiện. Nếu biểu tượng chưa hiện ngay, hãy respring một lần; không cần gỡ bản cũ trước khi nâng cấp.
 

@@ -33,6 +33,16 @@
         </dict>
         <dict>
             <key>cell</key><string>PSGroupCell</string>
+            <key>label</key><string>TẠO NHANH</string>
+            <key>footerText</key><string>Tạo một profile cố định và nhất quán cho iOS 15. Thao tác không đổi danh sách ứng dụng, trạng thái bật tweak hoặc tùy chọn phần cứng nâng cao.</string>
+        </dict>
+        <dict>
+            <key>cell</key><string>PSButtonCell</string>
+            <key>label</key><string>Tạo profile ngẫu nhiên</string>
+            <key>action</key><string>randomizeProfile</string>
+        </dict>
+        <dict>
+            <key>cell</key><string>PSGroupCell</string>
             <key>label</key><string>THÔNG TIN THIẾT BỊ</string>
         </dict>
         <dict>
